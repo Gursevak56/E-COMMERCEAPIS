@@ -23,7 +23,8 @@ const userschema = mongoose.Schema({
     type:{
         type:Number,
         required:true
-    }
+    },
+    resettoken:{type:String}
 })
 const User = mongoose.model('user',userschema);
 module.exports = User;

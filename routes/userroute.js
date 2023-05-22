@@ -25,4 +25,6 @@ router.get('/text',jwtauth,(req,res,next)=>{
 })
 //update password
 router.post('/update-password',jwtauth,usercontroller.update_password);
+router.post('/forget-password',usercontroller.forgetpassword)
+router.get('/reset-password/:token',usercontroller.resetpassword);
 module.exports = router;

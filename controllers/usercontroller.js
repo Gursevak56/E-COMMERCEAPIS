@@ -2,6 +2,8 @@ const User = require('./../models/usermodel');
 const bcryptjs = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv =require('dotenv').config();
+const sendemail = require('./../middleware/sendemail')
+const Randomstring = require('randomstring');
 const tokengen = async (id)=>{
     try {
       const token = await jwt.sign({_id:id},process.env.JWT_SECRET);
@@ -13,6 +15,7 @@ const tokengen = async (id)=>{
     }
 }
 const securepassword = async (password)=>{
+    console.log(password)
 const salt = await bcryptjs.genSalt(10);
 return await bcryptjs.hash(password,salt);
 }
@@ -55,6 +58,7 @@ const login = async (req,res)=>{
         console.log('user not found');
        }
        const ispassword = await bcryptjs.compare(req.body.password,userdata.password);
+       console.log(ispassword)
        if(!ispassword){
         res.status(404).json({
             status:"fail",
@@ -97,8 +101,78 @@ if(updateuser){
     })
 }
 }
+const forgetpassword = async (req,res)=>{
+    const email = req.body.email;
+    if(!email){
+        res.status(404).send({
+            message:"email not found"
+        })
+        return
+    }
+    const user = await User.findOne({email:email});
+    if(!user){
+        res.status(400).json({
+            status:"fail",
+            message:"user not found"
+        })
+        return
+    }
+    const token = Randomstring.generate(14);
+    const updateduser = await User.findByIdAndUpdate({_id:user._id},{$set:{resettoken:token}})
+    if(!updateduser){
+        res.status.json({
+            status:"fail",
+            message:'token not available in the database'
+        })
+        return
+    }
+   await sendemail({
+        name:user.name,
+        id:user._id,
+        token:token,
+        email:user.email,
+        subject:'regarding reset password'
+    })
+    res.status(200).json({
+        status:"success",
+        message:"email send successfully"
+    })
+}
+const resetpassword = async (req,res)=>{
+  const token =req.params.token;
+  if(!token){
+    res.status(404).json({
+        status:"fail",
+        message:"reset token not found"
+    })
+    return
+  }
+  const user = await User.findOne({resettoken:token});
+  if(!user){
+    res.status(400).json({
+        status:"fail",
+        message:"user not found"
+    })
+    return
+  }
+  const password = securepassword(req.body.password);
+ const updatepass= await User.findByIdAndUpdate({_id:user._id},{$set:{password:password}});
+ if(!updatepass){
+    res.status(404).json({
+        status:'fail',
+        message:"password not updated"
+    })
+ }
+ res.status(200).json({
+    status:"success",
+    updatepass
+})
+}
+
 module.exports ={
     registeruser,
     login,
-    update_password
+    update_password,
+    forgetpassword,
+    resetpassword
 }
