@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const dotenv =require('dotenv').config();
 const sendemail = require('./../middleware/sendemail')
 const Randomstring = require('randomstring');
+const fs = require('fs');
+
 const tokengen = async (id)=>{
     try {
       const token = await jwt.sign({_id:id},process.env.JWT_SECRET);

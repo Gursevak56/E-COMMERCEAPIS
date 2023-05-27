@@ -8,6 +8,8 @@ dotenv.config();
 const userrouter = require('./routes/userroute');
 const storerouter = require('./routes/storeroute');
 const categoryroute = require('./routes/categoryroute');
+const subcategory = require('./routes/subcategoryroute');
+const productroute = require('./routes/addproductroute');
 const dburl = process.env.DB_URL;
 mongoose.connect(dburl,{useNewUrlParser:true}).then(()=>{
     console.log('Database connected successfully');
@@ -25,6 +27,8 @@ app.use(session({
 app.use('/api',userrouter);
 app.use('/api/store',storerouter);
 app.use('/api/category',categoryroute)
+app.use('/api/subcategory',subcategory)
+app.use('/api/addproduct',productroute);
 const port=process.env.PORT;
 app.listen(port,()=>{
     console.log(`Server is running on ${port}`);
